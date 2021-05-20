@@ -69,7 +69,7 @@
 	    xor 	bh,bh
 	    int 	0x10
 	
-	    mov 	cx,#27
+	    mov 	cx,#27                  ! cx代表要输出字符串的个数, 要根据取“msg1的长度” 实时调整。要注意：除了我们设置的字符串 msg1 之外，还有三个换行 + 回车，一共是 6 个字符。故总的长度为“msg1的长度+6”。
 	    mov 	bx,#0x000c		! page 0, attribute c 
 	    mov 	bp,#msg1		! es:bp 指向待显示 字符串地址。bp是指要显示的字符串在内存中的偏移地址。
 	    mov 	ax,#0x1301		! write string, move cursor
