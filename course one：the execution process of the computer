@@ -21,7 +21,7 @@
     begbss:
     .text
 
-    SETUPLEN = 4				! setup程序代码占用扇区数
+    SETUPLEN = 4			! setup程序代码占用扇区数
     BOOTSEG  = 0x07c0			! bootsect程序代码所在内存原始地址
     INITSEG  = 0x9000			! 将bootsect移动到0x9000处
     SETUPSEG = 0x9020			! setup程序开始的地址
