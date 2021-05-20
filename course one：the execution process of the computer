@@ -62,16 +62,16 @@
 	    int		0x13
 	    j		load_setup
 
-    ! 载入setup模块, 输出一些信息。其中0x10是BIOS输出显示信息的中断。
+    ! 载入setup模块：在显示屏上输出一些信息。其中0x10是BIOS输出显示信息的中断。
     ok_load_setup:
 
-	    mov 	ah,#0x03		! read cursor pos
+	    mov 	ah,#0x03		! read cursor pos; 因为要将字符串输出在显示器的光标位置，首先要获取显示器的光标位置。
 	    xor 	bh,bh
 	    int 	0x10
 	
 	    mov 	cx,#27
 	    mov 	bx,#0x000c		! page 0, attribute c 
-	    mov 	bp,#msg1		! es:bp 指向待显示 字符串
+	    mov 	bp,#msg1		! es:bp 指向待显示 字符串地址。bp是指要显示的字符串在内存中的偏移地址。
 	    mov 	ax,#0x1301		! write string, move cursor
 	    int 	0x10
     !开始执行setup代码
