@@ -1,10 +1,92 @@
 问题1：当对计算机进行开机操作时，计算机发生了什么？
 
-答案： (1)、首先计算机刚开机时，CPU是处于实模式下的。其寻址的方式是“段地址+偏移地址”。
+    答案： (1)、首先计算机刚开机时，CPU是处于实模式下的。其寻址的方式是“段地址+偏移地址”。
 
-       (2)、计算机开机时，代表代码的段寄存器CS=0xFFFFF;偏移地址IP=0x0000。这段是初始的代码区域，是事先写死在ROM中的，因为计算机开机总是要从
-去内存中取出指令进行执行。这段代码也是BIOS的映射区。其主要作用是：检查RAM、键盘、显示器、软硬磁盘是否正常。正常的话，继续向下执行。不正常的话
-就开不了机器了。
+           (2)、计算机开机时，代表代码的段寄存器CS=0xFFFFF;偏移地址IP=0x0000。这段是初始的代码区域，是事先写死在ROM中的，因为计算机开机总是要从
+    去内存中取出指令进行执行。这段代码也是BIOS的映射区。其主要作用是：检查RAM、键盘、显示器、软硬磁盘是否正常。正常的话，继续向下执行。不正常的话
+    就开不了机器了。
 
-       (3)、然后，CS会指向磁盘的0磁道0扇区，其地址为0x7c00处。IP为0x0000。注意，一个扇区是512字节。该部分为操作系统的引导扇区 bootsect.s。
-引导扇区是启动设备的第一个扇区。也是存放着计算机开机后执行的第一段我们可以控制的程序。
+           (3)、然后，CS会指向磁盘的0磁道0扇区，其地址为0x7c00处。IP为0x0000。注意，一个扇区是512字节。该部分为操作系统的引导扇区 bootsect.s。
+    引导扇区是启动设备的第一个扇区。也是存放着计算机开机后执行的第一段我们可以控制的程序。
+
+
+问题2：bootsect.s的代码解读
+
+    .globl begtext, begdata, begbss, endtext, enddata, endbss
+    .text
+    begtext:
+    .data
+    begdata:
+    .bss
+    begbss:
+    .text
+
+    SETUPLEN = 4				! setup程序代码占用扇区数
+    BOOTSEG  = 0x07c0			! bootsect程序代码所在内存原始地址
+    INITSEG  = 0x9000			! 将bootsect移动到0x9000处
+    SETUPSEG = 0x9020			! setup程序开始的地址
+
+    entry _start
+    _start:
+
+    ! 下面这段代码将自身从原来的0x07c0处复制到0x9000处
+	    mov	ax,#BOOTSEG
+	    mov	ds,ax
+	    mov	ax,#INITSEG
+	    mov	es,ax
+	    mov	cx,#256
+	    sub	si,si
+	    sub	di,di
+	    rep
+	    movw
+	
+    ! 复制完成从0x9000的go标号处开始执行，jmpi表示段间跳转
+	    jmpi	go,INITSEG 
+    go:	mov	ax,cs
+	    mov	ds,ax  !设置ds=es=cs
+	    mov	es,ax
+
+    ! 加载setup.s程序，其中es:bx=内存地址; int 0x13是BIOS读磁盘扇区的中断。就是此时需要中断执行程序，让CPU去磁盘读数据
+    load_setup: 
+	    mov	dx,#0x0000		! drive 0, head 0
+	    mov	cx,#0x0002		! sector 2, track 0;      ch=柱面号, cl=开始扇区, dh=磁头号, dl=驱动器号
+	    mov	bx,#0x0200		! address = 512, in INITSEG
+	    mov	ax,#0x0200+SETUPLEN	! service 2, nr of sectors;  ah=0x02(读磁盘), al=扇区数量(SETUPLEN=4)
+	    int	0x13			! read it
+	    jnc	ok_load_setup		! ok - continue
+	    ！加载错误
+	    mov	dx,#0x0000
+	    mov	ax,#0x0000		! reset the diskette
+	    int	0x13
+	    j	load_setup
+
+    ok_load_setup:
+
+    !输出一些信息
+
+	    mov	ah,#0x03		! read cursor pos
+	    xor	bh,bh
+	    int	0x10
+	
+	    mov	cx,#27
+	    mov	bx,#0x000c		! page 0, attribute c 
+	    mov	bp,#msg1		! es:bp 指向待显示 字符串
+	    mov	ax,#0x1301		! write string, move cursor
+	    int	0x10
+    !开始执行setup代码
+	    jmpi 0,SETUPSEG
+
+    msg1:
+	    .byte 13,10
+	.ascii "Tonatus is booting..."
+	.byte 13,10,13,10
+
+    .org 510
+    boot_flag:
+	    .word 0xAA55
+    .text
+    endtext:
+    .data
+    enddata:
+    .bss
+    endbss:
