@@ -25,6 +25,47 @@
 	mov 	 cx,#0x10
 	rep
 	movsb
+! first we move the system to it's rightful place
+! 首先我们将system模块移到正确的位置。
+! bootsect引导程序是将system模块读入到从0x10000（64k）开始的位置。由于当时假设
+! system模块最大长度不会超过0x80000（512k），也即其末端不会超过内存地址0x90000，
+! 所以bootsect会将自己移动到0x90000开始的地方，并把setup加载到它的后面。
+! 下面这段程序的用途是再把整个system模块移动到0x00000位置，即把从0x10000到0x8ffff
+! 的内存数据块(512k)，整块地向内存低端移动了0x10000（64k）的位置。
+       mov      ax,#0x0000
+       cld                     ! 'direction'=0, movs moves forward
+       do_move:
+       mov      es,ax           ! destination segment ! es:di目的地址(初始为0x0000:0x0)
+       add      ax,#0x1000
+       cmp      ax,#0x9000      ! 已经把从0x8000段开始的64k代码移动完？
+       jz       end_move
+       mov      ds,ax           ! source segment  ! ds:si源地址(初始为0x1000:0x0)
+       sub      di,di
+       sub      si,si
+       mov      cx,#0x8000! 移动0x8000字（64k字节）。
+       rep
+       movsw
+       jmp      do_move
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ! 前面修改了ds寄存器，这里将其设置为0x9000
 	mov 	 ax,#INITSEG
