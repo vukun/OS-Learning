@@ -73,7 +73,7 @@
 	    xor 	bh,bh			! 页号，应该是屏幕位置的页号
 	    int 	0x10			! 读取光标所在的位置 返回参数保存在dx寄存器中
 	
-	    mov 	cx,#27                  ! cx代表要输出字符串的个数, 要根据取“msg1的长度” 实时调整。要注意：除了我们设置的字符串 msg1 之外，还有三个换行 + 回车，一共是 6 个字符。故总的长度为“msg1的长度+6”。
+	    mov 	cx,#37                  ! cx代表要输出字符串的个数, 要根据取“msg1的长度” 实时调整。要注意：除了我们设置的字符串 msg1 之外，还有三个换行 + 回车，一共是 6 个字符。故总的长度为“msg1的长度+6”。
 	    mov 	bx,#0x000c		! page 0, attribute c;  读取光标所在的位置 返回参数保存在dx寄存器中。
 	    mov 	bp,#msg1		! es:bp 指向待显示 字符串地址。bp是指要显示的字符串在内存中的偏移地址。
 	    mov 	ax,#0x1301		! write string, move cursor; ah = 0x13 表示显示字符功能号，al = 0x01 表示光标的属性在bl保存。
@@ -83,7 +83,7 @@
 
     msg1:
 	    .byte 13,10
-	    .ascii "Tonatus is booting..."
+	    .ascii "Hello OS world, my name is Kwin"
 	    .byte 13,10,13,10
 
     .org 510
