@@ -66,14 +66,14 @@
     ok_load_setup:
 
 	    mov 	ah,#0x03		! read cursor pos; 因为要将字符串输出在显示器的光标位置，首先要获取显示器的光标位置。
-	    xor 	bh,bh
-	    int 	0x10
+	    xor 	bh,bh			! 页号，应该是屏幕位置的页号
+	    int 	0x10			! 读取光标所在的位置 返回参数保存在dx寄存器中
 	
 	    mov 	cx,#27                  ! cx代表要输出字符串的个数, 要根据取“msg1的长度” 实时调整。要注意：除了我们设置的字符串 msg1 之外，还有三个换行 + 回车，一共是 6 个字符。故总的长度为“msg1的长度+6”。
-	    mov 	bx,#0x000c		! page 0, attribute c 
+	    mov 	bx,#0x000c		! page 0, attribute c;  读取光标所在的位置 返回参数保存在dx寄存器中。
 	    mov 	bp,#msg1		! es:bp 指向待显示 字符串地址。bp是指要显示的字符串在内存中的偏移地址。
-	    mov 	ax,#0x1301		! write string, move cursor
-	    int 	0x10
+	    mov 	ax,#0x1301		! write string, move cursor; ah = 0x13 表示显示字符功能号，al = 0x01 表示光标的属性在bl保存。
+	    int 	0x10			! 开启中断，开始从内存中读字符到屏幕中
     !开始执行setup代码
 	    jmpi 0,SETUPSEG
 
