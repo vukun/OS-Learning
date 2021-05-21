@@ -86,7 +86,7 @@
 	    .ascii "Hello OS world, my name is Kwin"
 	    .byte 13,10,13,10
 
-    .org 510
+    .org 508
     boot_flag:
 	    .word 0xAA55
     .text
