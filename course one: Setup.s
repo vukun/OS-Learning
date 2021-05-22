@@ -195,3 +195,9 @@ endtext:
 enddata:
 .bss
 endbss:
+
+
+
+总结：
+    1、开机时，CPU工作流程： 从磁盘读操作系统 --->  获取一些参数并启动了保护模式  ---> 启动段页(初始化gdt和idt表)  --->   系统初始化，(内存、硬件等)
+                                bootsect    --->             setup            --->           head             --->       main (mem_init等)
